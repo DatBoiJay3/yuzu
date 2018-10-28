@@ -6,6 +6,7 @@
 
 #include <map>
 #include <memory>
+#include <unordered_map>
 
 #include "common/common_types.h"
 #include "video_core/rasterizer_cache.h"
@@ -54,6 +55,9 @@ public:
         return buffer.handle;
     }
 
+    /// Reloads the global region from guest memory
+    void Reload(u32 size_);
+
     // We do not have to flush this cache as things in it are never modified by us.
     void Flush() override {}
 
@@ -70,6 +74,13 @@ public:
     GlobalRegion GetGlobalRegion(
         const Tegra::Engines::Maxwell3D::GlobalMemoryDescriptor& descriptor,
         Tegra::Engines::Maxwell3D::Regs::ShaderStage stage);
+
+private:
+    GlobalRegion TryGetReservedGlobalRegion(VAddr addr, u32 size);
+    GlobalRegion GetUncachedGlobalRegion(VAddr addr, u32 size);
+    void ReserveGlobalRegion(const GlobalRegion& region);
+
+    std::unordered_map<VAddr, GlobalRegion> reserve;
 };
 
 } // namespace OpenGL
